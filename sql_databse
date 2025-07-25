@@ -1,0 +1,64 @@
+-- Create database
+CREATE DATABASE IF NOT EXISTS cab_booking_db;
+USE cab_booking_db;
+
+-- Table for Riders (Customers)
+CREATE TABLE rider (
+    customer_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    public_id CHAR(36) NOT NULL UNIQUE,          -- UUID for external reference
+    name VARCHAR(100) NOT NULL,
+    phone_no VARCHAR(15) NOT NULL UNIQUE,        
+    otp VARCHAR(6) NOT NULL UNIQUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) AUTO_INCREMENT=101;
+
+-- Table for Drivers
+CREATE TABLE driver (
+    driver_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    public_id CHAR(36) NOT NULL UNIQUE,        -- UUID (one-time generation)
+    name VARCHAR(100) NOT NULL,
+    phone_no VARCHAR(15) NOT NULL UNIQUE,
+    car_no VARCHAR(20) NOT NULL UNIQUE,        -- State/UT code + RTO code + unique alphanumeric
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) AUTO_INCREMENT=101;
+
+-- Table for Locations
+CREATE TABLE location (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    city_name VARCHAR(100),
+    lat DECIMAL(10, 8) NOT NULL, -- Latitude
+    lng DECIMAL(11, 8) NOT NULL, -- Longitude
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Table for Trips
+CREATE TABLE trip (
+    trip_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    public_id CHAR(36) NOT NULL UNIQUE,         -- UUID for external reference
+    cust_id BIGINT NOT NULL,
+    driver_id BIGINT,                           -- Nullable: trip may not be assigned yet
+    start_loc_id BIGINT NOT NULL,
+    end_loc_id BIGINT NOT NULL,
+    fare DECIMAL(10, 2),
+    status ENUM('REQUESTED', 'ONGOING', 'COMPLETED', 'CANCELLED') NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    -- Foreign Key Constraints
+    FOREIGN KEY (cust_id) REFERENCES rider(customer_id),
+    FOREIGN KEY (driver_id) REFERENCES driver(driver_id),
+    FOREIGN KEY (start_loc_id) REFERENCES location(id),
+    FOREIGN KEY (end_loc_id) REFERENCES location(id)
+);
+
+
+CREATE INDEX idx_customer_mobile ON customer(mobile_number);
+CREATE INDEX idx_driver_mobile ON driver(mobile_number);
+
+CREATE INDEX idx_trip_customer_id ON trip(customer_id);   -- to get all trips by a customer
+CREATE INDEX idx_trip_driver_id ON trip(driver_id);       -- to get all trips by a driver
+CREATE INDEX idx_trip_status ON trip(status);             -- useful for filtering ongoing/completed
+CREATE INDEX idx_trip_created_at ON trip(created_at);     -- for recent trip sorting
