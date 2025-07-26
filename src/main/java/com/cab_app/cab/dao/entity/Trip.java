@@ -2,6 +2,7 @@ package com.cab_app.cab.dao.entity;
 
 import com.cab_app.cab.common.constant.TripStatus;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -36,6 +37,12 @@ public class Trip {
 
     @Enumerated(EnumType.STRING)
     private TripStatus status;
+
+    @Column(name = "otp", nullable = false)
+    private String otp;
+
+    @Column(name = "otp_verified", nullable = false)
+    private boolean otpVerified = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -126,6 +133,22 @@ public class Trip {
 
     public void setStatus(TripStatus status) {
         this.status = status;
+    }
+
+    public String getOtp() {
+        return otp;
+    }
+
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+
+    public boolean isOtpVerified() {
+        return otpVerified;
+    }
+
+    public void setOtpVerified(boolean otpVerified) {
+        this.otpVerified = otpVerified;
     }
 
     public LocalDateTime getCreatedAt() {
